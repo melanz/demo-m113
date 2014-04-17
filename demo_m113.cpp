@@ -362,6 +362,9 @@ int main(int argc, char* argv[]) {
 	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->setBodyPerBin(200, 100);
 	system_gpu->Set_G_acc(ChVector<>(0, gravity, 0));
 	system_gpu->SetStep(timestep);
+	int threads = 16;
+	system_gpu->SetParallelThreadNumber(threads);
+	omp_set_num_threads(threads);
 
 	ChSharedBodyPtr L = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
 	ChSharedBodyPtr R = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
