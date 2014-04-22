@@ -25,7 +25,7 @@ ChSystemParallelDVI * system_gpu;
 
 ChSharedPtr<ChMaterialSurface> material_shoes, material_chassis;
 ChSharedBodyPtr chassis, engine1, engine2, idler;
-ChSharedBodyPtr rollers[6];
+ChSharedBodyPtr rollers[10];
 ChSharedPtr<ChLinkEngine> eng_roller1, eng_roller2;
 
 vector<ChSharedPtr<ChLinkLockRevolute> > revolutes;
@@ -34,13 +34,11 @@ vector<ChBody*> shoes;
 double idlerPos = 0;
 int sim_type = 0;
 float mass_multiplier = 10;
-float mass_shoe = 2 * mass_multiplier;
-float mass_idler = 25 * mass_multiplier;
-float mass_chasis = 500 * mass_multiplier;
-float mass_sprocket = 25 * mass_multiplier;
-float mass_roller = 25 * mass_multiplier;
-
-float scale_tank = 1;
+float mass_shoe = 1;//2 * mass_multiplier;
+float mass_idler = 1;//25 * mass_multiplier;
+float mass_chasis = 1;//500 * mass_multiplier;
+float mass_sprocket = 1;//25 * mass_multiplier;
+float mass_roller = 1;//25 * mass_multiplier;
 
 double L = .09075;
 double R = .039;
@@ -54,169 +52,95 @@ real cohesion = 500;
 
 ParticleGenerator<ChSystemParallel>* layer_gen;
 ParticleGenerator<ChSystemParallel>* layer_gen_bottom;
-ChSharedBodyPtr createTrackShoeM113(ChVector<> position, ChQuaternion<> rotation) {
+
+ChSharedBodyPtr createTrackShoeM113(ChVector<> position, ChQuaternion<> rotation)
+{
+	double L = .09075;
+	double R = .039;
+	double H1 = .08;
+	double H2 = .0739;
+	double D = .1692;
+	double W = .015;
+
 	ChSharedBodyPtr mrigidBody = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
-	InitObject(mrigidBody, mass_shoe, position * scale_tank, rotation, material_shoes, true, false, -5, 3);
 
-	AddCollisionGeometry(mrigidBody, SPHERE, ChVector<>(R, D * .2, R) * scale_tank, ChVector<>(L, 0, 0) * scale_tank, chrono::Q_from_AngAxis(CH_C_PI / 2, VECT_X));
-	AddCollisionGeometry(mrigidBody, BOX, ChVector<>((L + 2 * R) * .45, W, D) * scale_tank, ChVector<>(0, -H2 + W, 0) * scale_tank, Quaternion(1, 0, 0, 0));
-	AddCollisionGeometry(mrigidBody, CYLINDER, ChVector<>(W, D, W) * scale_tank, ChVector<>(0, -H2*1.2+W , 0) * scale_tank, chrono::Q_from_AngAxis(CH_C_PI / 2, VECT_X));
-	AddCollisionGeometry(mrigidBody, SPHERE, Vector(W, .01, .01), Vector(0,  -H2*1.2+W ,  D), Quaternion(1, 0, 0, 0));
-	AddCollisionGeometry(mrigidBody, SPHERE, Vector(W, .01, .01), Vector(0,  -H2*1.2+W ,  -D), Quaternion(1, 0, 0, 0));
-	real rx = (L + 2 * R) * .45;
-	real ry = W;
-	real rz = D;
-	AddCollisionGeometry(mrigidBody, CYLINDER, ChVector<>(W, D, W) * scale_tank, ChVector<>(-rx, -H2 + W, 0) * scale_tank, chrono::Q_from_AngAxis(CH_C_PI / 2, VECT_X));
-	AddCollisionGeometry(mrigidBody, CYLINDER, ChVector<>(W, D, W) * scale_tank, ChVector<>(rx, -H2 + W, 0) * scale_tank, chrono::Q_from_AngAxis(CH_C_PI / 2, VECT_X));
-
-	AddCollisionGeometry(mrigidBody, CYLINDER, ChVector<>(W, (L + 2 * R) * .45, W) * scale_tank, ChVector<>(0, -H2 + W, -rz) * scale_tank, chrono::Q_from_AngAxis(CH_C_PI / 2, VECT_Z));
-	AddCollisionGeometry(mrigidBody, CYLINDER, ChVector<>(W, (L + 2 * R) * .45, W) * scale_tank, ChVector<>(0, -H2 + W, rz) * scale_tank, chrono::Q_from_AngAxis(CH_C_PI / 2, VECT_Z));
-
-	AddCollisionGeometry(mrigidBody, SPHERE, Vector(W, .01, .01), Vector(-rx, -H2 + W, -rz), Quaternion(1, 0, 0, 0));
-	AddCollisionGeometry(mrigidBody, SPHERE, Vector(W, .01, .01), Vector(-rx, -H2 + W, rz), Quaternion(1, 0, 0, 0));
-	AddCollisionGeometry(mrigidBody, SPHERE, Vector(W, .01, .01), Vector(rx, -H2 + W, rz), Quaternion(1, 0, 0, 0));
-	AddCollisionGeometry(mrigidBody, SPHERE, Vector(W, .01, .01), Vector(rx, -H2 + W, -rz), Quaternion(1, 0, 0, 0));
-
+	InitObject(mrigidBody, mass_shoe, position, rotation, material_shoes, true, false, 3, 3);
+	AddCollisionGeometry(mrigidBody, SPHERE, 	ChVector<>(R, D, R), 				ChVector<>(L, 0, 0), 					chrono::Q_from_AngAxis(CH_C_PI / 2, VECT_X));
+	//AddCollisionGeometry(mrigidBody, CYLINDER, 	ChVector<>(R, D, R), 				ChVector<>(L, 0, 0), 					chrono::Q_from_AngAxis(CH_C_PI / 2, VECT_X));
+	//AddCollisionGeometry(mrigidBody, CYLINDER, 	ChVector<>(R, D, R), 				ChVector<>(-L, 0, 0), 					chrono::Q_from_AngAxis(CH_C_PI / 2, VECT_X));
+	AddCollisionGeometry(mrigidBody, BOX, 		ChVector<>(L+2*R,(H1+H2)*.5,R*.5), 	ChVector<>(0,H1-(H1+H2)*.5,D+R*.5), 	Quaternion(1, 0, 0, 0));
+	AddCollisionGeometry(mrigidBody, BOX, 		ChVector<>(L+2*R,(H1+H2)*.5,R*.5), 	ChVector<>(0,H1-(H1+H2)*.5,-D-R*.5), 	Quaternion(1, 0, 0, 0));
+	AddCollisionGeometry(mrigidBody, BOX, 		ChVector<>(L+2*R,W,D), 				ChVector<>(0,-H2+W,0), 					Quaternion(1, 0, 0, 0));
 	FinalizeObject(mrigidBody, (ChSystemParallel *) system_gpu);
 	//mrigidBody->SetInertiaXX(ChVector<>(.00067, .00082, .00017));
+
 	return mrigidBody;
 }
 
-ChSharedBodyPtr createChassisM113(ChVector<> &position) {
+ChSharedBodyPtr createChassisM113(ChVector<> &position)
+{
 	ChSharedBodyPtr mrigidBody = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
-	InitObject(mrigidBody, mass_chasis, position * scale_tank, Quaternion(1, 0, 0, 0), material_chassis, true, false, 4, 3);
-	AddCollisionGeometry(mrigidBody, BOX, ChVector<>(1.5, .5, .6) * scale_tank, ChVector<>(0, 0, 0), Quaternion(1, 0, 0, 0));
+
+	InitObject(mrigidBody, mass_chasis, position, Quaternion(1, 0, 0, 0), material_chassis, true, false, 4, 4);
+	AddCollisionGeometry(mrigidBody, BOX, 		ChVector<>(.1,.1,.1), 	ChVector<>(0,0,0), 	Quaternion(1, 0, 0, 0));
 	FinalizeObject(mrigidBody, (ChSystemParallel *) system_gpu);
-/*
-	ChSharedBodyPtr mPlow = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
-	InitObject(mPlow, 10 * mass_multiplier, position + ChVector<>(-2.9, -.6, 0), Quaternion(1, 0, 0, 0), material_chassis, true, false, 4, 3);
 
-	//AddCollisionGeometryTriangleMesh(mPlow, "plow.obj", Vector(0, 0, 0), Quaternion(1, 0, 0, 0));
-
-	real h = .2;
-	real offset = -1;
-	real angle_a = 25 * CH_C_PI / 180.0;
-	real angle_b = 15 * CH_C_PI / 180.0;
-	real angle_c = -15 * CH_C_PI / 180.0;
-	real angle_d = -45 * CH_C_PI / 180.0;
-	Vector pos_d = Vector(-sin(angle_d) * h, cos(angle_d) * h, 0);
-	Vector pos_c = Vector(-sin(angle_c) * h, cos(angle_c) * h, 0);
-	Vector pos_b = Vector(-sin(angle_b) * h, cos(angle_b) * h, 0);
-	Vector pos_a = Vector(-sin(angle_a) * h, cos(angle_a) * h, 0);
-
-	AddCollisionGeometry(mPlow, CYLINDER, ChVector<>(.025, 1, .025) * scale_tank, Vector(0,0,0), chrono::Q_from_AngAxis(CH_C_PI / 2, VECT_X));
-	AddCollisionGeometry(mPlow, SPHERE, Vector(.025, .01, .01), Vector(0, 0, 1), Quaternion(1, 0, 0, 0));
-	AddCollisionGeometry(mPlow, SPHERE, Vector(.025, .01, .01), Vector(0, 0, -1), Quaternion(1, 0, 0, 0));
-	AddCollisionGeometry(mPlow, BOX, ChVector<>(.025, .2, 1) * scale_tank, pos_d, Q_from_AngAxis(angle_d, Vector(0, 0, 1)));
-	AddCollisionGeometry(mPlow, BOX, ChVector<>(.025, .2, 1) * scale_tank, pos_d * 2 + pos_c, Q_from_AngAxis(angle_c, Vector(0, 0, 1)));
-	AddCollisionGeometry(mPlow, BOX, ChVector<>(.025, .2, 1) * scale_tank, pos_d * 2 + pos_c * 2 + pos_b, Q_from_AngAxis(angle_b, Vector(0, 0, 1)));
-	AddCollisionGeometry(mPlow, BOX, ChVector<>(.025, .2, 1) * scale_tank, pos_d * 2 + pos_c * 2 + pos_b * 2 + pos_a, Q_from_AngAxis(angle_a, Vector(0, 0, 1)));
-	FinalizeObject(mPlow, (ChSystemParallel *) system_gpu);
-	real rx = .1;
-	real ry = .7;
-	real rz = 1.65;
-
-	mPlow->SetInertiaXX(ChVector<>(1 / 12.0 * mass_chasis * (ry * ry + rz * rz), 1 / 12.0 * mass_chasis * (rx * rx + rz * rz), 1 / 12.0 * mass_chasis * (rx * rx + ry * ry)));
-
-	ChSharedPtr<ChLinkLockLock> fixedLink(new ChLinkLockLock);
-	fixedLink->Initialize(mrigidBody, mPlow, ChCoordsys<>(position + ChVector<>(-2.75, -.2, 0), QUNIT));
-	system_gpu->AddLink(fixedLink);
-*/
 	return mrigidBody;
 }
-ChSharedBodyPtr createRollerM113(ChVector<> position, ChSharedBodyPtr mrigidBody1, double springLength, double springK, double springR, double rad) {
+
+ChSharedBodyPtr createRollerM113(ChVector<> position, ChSharedBodyPtr mrigidBody1, double springLength, double springK, double springR)
+{
 	ChSharedBodyPtr mrigidBody = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
-	InitObject(mrigidBody, mass_roller, position * scale_tank, chrono::Q_from_AngAxis(0, VECT_X),material_shoes, true, false, 4, 4);
-	AddCollisionGeometry(mrigidBody, CYLINDER, ChVector<>(rad, .02, rad) * scale_tank, ChVector<>(0, 0, -R - .06) * scale_tank, chrono::Q_from_AngAxis(CH_C_PI / 2, VECT_X));
-	AddCollisionGeometry(mrigidBody, CYLINDER, ChVector<>(rad, .02, rad) * scale_tank, ChVector<>(0, 0, R + .06) * scale_tank, chrono::Q_from_AngAxis(CH_C_PI / 2, VECT_X));
+
+	InitObject(mrigidBody, mass_roller, position, chrono::Q_from_AngAxis(0, VECT_X),material_shoes, true, false, 4, 4);
+	AddCollisionGeometry(mrigidBody, CYLINDER, ChVector<>(.305,.16,.305), ChVector<>(0, 0, 0), chrono::Q_from_AngAxis(CH_C_PI / 2, VECT_X));
 	FinalizeObject(mrigidBody, (ChSystemParallel *) system_gpu);
+
 	ChSharedBodyPtr ptr1 = ChSharedBodyPtr(mrigidBody);
 	ChSharedBodyPtr ptr2 = ChSharedBodyPtr(mrigidBody1);
 	ChSharedPtr<ChLinkLockRevolute> revJoint(new ChLinkLockRevolute);
-	revJoint->Initialize(ptr1, ptr2, ChCoordsys<>(position * scale_tank, QUNIT));
+	revJoint->Initialize(ptr1, ptr2, ChCoordsys<>(position, QUNIT));
 	system_gpu->AddLink(revJoint);
-	return mrigidBody;
-}
-ChSharedBodyPtr createRollerSprocketM113(ChVector<> position, ChSharedBodyPtr mrigidBody1, double springLength, double springK, double springR, double rad) {
-	ChSharedBodyPtr mrigidBody = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
-	InitObject(mrigidBody, mass_roller, position * scale_tank, chrono::Q_from_AngAxis(0, VECT_X),material_shoes, true, false, 4, 4);
-	AddCollisionGeometry(mrigidBody, CYLINDER, ChVector<>(rad, .02, rad) * scale_tank, ChVector<>(0, 0, -R - .06) * scale_tank, chrono::Q_from_AngAxis(CH_C_PI / 2, VECT_X));
-	for (int i = 0; i < 5; i++) {
-		AddCollisionGeometry(mrigidBody, BOX, ChVector<>(rad, .01, .16 * .5) * scale_tank, ChVector<>(0, 0, 0) * scale_tank, chrono::Q_from_AngAxis(i * 36.0 * CH_C_PI / 180.0, VECT_Z));
-	}
-	AddCollisionGeometry(mrigidBody, CYLINDER, ChVector<>(rad, .02, rad) * scale_tank, ChVector<>(0, 0, R + .06) * scale_tank, chrono::Q_from_AngAxis(CH_C_PI / 2, VECT_X));
-	FinalizeObject(mrigidBody, (ChSystemParallel *) system_gpu);
-	ChSharedBodyPtr ptr1 = ChSharedBodyPtr(mrigidBody);
-	ChSharedBodyPtr ptr2 = ChSharedBodyPtr(mrigidBody1);
-	ChSharedPtr<ChLinkLockRevolute> revJoint(new ChLinkLockRevolute);
-	revJoint->Initialize(ptr1, ptr2, ChCoordsys<>(position * scale_tank, QUNIT));
-	system_gpu->AddLink(revJoint);
+
 	return mrigidBody;
 }
 
-ChSharedBodyPtr createSprocketM113(ChVector<> &position, ChSharedBodyPtr mrigidBody1) {
+ChSharedBodyPtr createSprocketM113(ChVector<> &position, ChSharedBodyPtr mrigidBody1)
+{
 	ChSharedBodyPtr mrigidBody = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
-	InitObject(mrigidBody, mass_sprocket, position * scale_tank, chrono::Q_from_AngAxis(0, VECT_X), material_shoes, true, false, 4, 4);
-	AddCollisionGeometry(mrigidBody, ELLIPSOID, ChVector<>(.254, .16 * .5, .254) * scale_tank, ChVector<>(0, 0, 0) * scale_tank, chrono::Q_from_AngAxis(CH_C_PI / 2, VECT_X));
+
+	InitObject(mrigidBody, mass_sprocket, position, chrono::Q_from_AngAxis(0, VECT_X), material_shoes, true, false, 4, 4);
+	AddCollisionGeometry(mrigidBody, CYLINDER, ChVector<>(.254,.16,.254), ChVector<>(0, 0, 0), chrono::Q_from_AngAxis(CH_C_PI / 2, VECT_X));
 	for (int i = 0; i < 5; i++) {
-		AddCollisionGeometry(mrigidBody, BOX, ChVector<>(.28965 * 1.1, .03, .16 * .5) * scale_tank, ChVector<>(0, 0, 0) * scale_tank, chrono::Q_from_AngAxis(i * 36.0 * CH_C_PI / 180.0, VECT_Z));
+		AddCollisionGeometry(mrigidBody, BOX, ChVector<>(.28965,.03,.16), ChVector<>(0, 0, 0), chrono::Q_from_AngAxis(i * 36.0 * CH_C_PI / 180.0, VECT_Z));
 	}
 	FinalizeObject(mrigidBody, (ChSystemParallel *) system_gpu);
 	//mrigidBody->SetInertiaXX(ChVector<>(.3717, .3717, .736));
+
 	ChSharedPtr<ChLinkLockRevolute> my_link1(new ChLinkLockRevolute);
-	my_link1->Initialize(mrigidBody, mrigidBody1, ChCoordsys<>(position * scale_tank, QUNIT));
+	my_link1->Initialize(mrigidBody, mrigidBody1, ChCoordsys<>(position, QUNIT));
 	system_gpu->AddLink(my_link1);
+
 	return mrigidBody;
 }
 
-ChSharedBodyPtr createIdlerM113(ChVector<> position, ChSharedBodyPtr mrigidBody1, double springLength, double springK, double springR) {
-
+ChSharedBodyPtr createIdlerM113(ChVector<> position, ChSharedBodyPtr mrigidBody1, double springLength, double springK, double springR)
+{
 	ChSharedBodyPtr mrigidBody = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
-	InitObject(mrigidBody, mass_idler, position * scale_tank, chrono::Q_from_AngAxis(0, VECT_X), material_shoes, true, false, 4, 4);
-	AddCollisionGeometry(mrigidBody, CYLINDER, ChVector<>(.305 / 1.5, .02, .305 / 1.5) * scale_tank, ChVector<>(0, 0, -R - .06) * scale_tank, chrono::Q_from_AngAxis(CH_C_PI / 2, VECT_X));
-	AddCollisionGeometry(mrigidBody, CYLINDER, ChVector<>(.305 / 1.5, .02, .305 / 1.5) * scale_tank, ChVector<>(0, 0, R + .06) * scale_tank, chrono::Q_from_AngAxis(CH_C_PI / 2, VECT_X));
-	FinalizeObject(mrigidBody, (ChSystemParallel *) system_gpu);
-	ChSharedPtr<ChLinkLockRevolute> revJoint(new ChLinkLockRevolute);
-	revJoint->Initialize(mrigidBody, mrigidBody1, ChCoordsys<>(position * scale_tank, QUNIT));
-	system_gpu->AddLink(revJoint);
-	return mrigidBody;
-}
 
-ChSharedPtr<ChLinkLockLock> createRollerM113WithSpring(ChVector<> position, ChSharedBodyPtr mrigidBody1, double springLength, double springK, double springR, double rad) {
-	ChSharedBodyPtr mrigidBody = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
-	InitObject(mrigidBody, mass_roller, position, chrono::Q_from_AngAxis(0, VECT_X), material_shoes, true, false, 4, 4);
-	AddCollisionGeometry(mrigidBody, CYLINDER, ChVector<>(rad, .16 * .3, rad), ChVector<>(0, 0, -.16 * .3 * 2), chrono::Q_from_AngAxis(CH_C_PI / 2, VECT_X));
-	AddCollisionGeometry(mrigidBody, CYLINDER, ChVector<>(rad, .16 * .3, rad), ChVector<>(0, 0, .16 * .3 * 2), chrono::Q_from_AngAxis(CH_C_PI / 2, VECT_X));
-	FinalizeObject(mrigidBody, (ChSystemParallel *) system_gpu);
-
-	ChSharedPtr<ChLinkLockLock> fixedLink(new ChLinkLockLock);
-	fixedLink->Initialize(mrigidBody, mrigidBody1, ChCoordsys<>(position, QUNIT));
-	system_gpu->AddLink(fixedLink);
-	return fixedLink;
-}
-
-ChSharedBodyPtr createIdlerM113WithSpring(ChVector<> position, ChSharedBodyPtr mrigidBody1, double springLength, double springK, double springR) {
-	ChSharedBodyPtr mrigidBody = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
 	InitObject(mrigidBody, mass_idler, position, chrono::Q_from_AngAxis(0, VECT_X), material_shoes, true, false, 4, 4);
-	AddCollisionGeometry(mrigidBody, CYLINDER, ChVector<>(.305 / 1.5, .16 * .3, .305 / 1.5), ChVector<>(0, 0, -.16 * .3 * 2), chrono::Q_from_AngAxis(CH_C_PI / 2, VECT_X));
-	AddCollisionGeometry(mrigidBody, CYLINDER, ChVector<>(.305 / 1.5, .16 * .3, .305 / 1.5), ChVector<>(0, 0, .16 * .3 * 2), chrono::Q_from_AngAxis(CH_C_PI / 2, VECT_X));
+	AddCollisionGeometry(mrigidBody, CYLINDER, ChVector<>(.2538,.16,.2538), ChVector<>(0, 0, 0), chrono::Q_from_AngAxis(CH_C_PI / 2, VECT_X));
 	FinalizeObject(mrigidBody, (ChSystemParallel *) system_gpu);
 
-	ChSharedPtr<ChLinkLockPointLine> revJoint(new ChLinkLockPointLine);
+	ChSharedPtr<ChLinkLockRevolute> revJoint(new ChLinkLockRevolute);
 	revJoint->Initialize(mrigidBody, mrigidBody1, ChCoordsys<>(position, QUNIT));
 	system_gpu->AddLink(revJoint);
 
-	ChSharedPtr<ChLinkSpring> link_spring = ChSharedPtr<ChLinkSpring>(new ChLinkSpring);
-	link_spring->Initialize(mrigidBody, mrigidBody1, false, position, position);
-	link_spring->Set_SpringRestLenght(springLength);
-	link_spring->Set_SpringK(springK);
-	link_spring->Set_SpringR(springR);
-	system_gpu->AddLink(link_spring);
-
 	return mrigidBody;
 }
 
-ChSharedBodyPtr inputTrackModelM113(int nTracks, real3 pinLoc1, ChVector<> &position, ChSharedBodyPtr chassisBody) {
+ChSharedBodyPtr inputTrackModelM113(int nTracks, real3 pinLoc1, ChVector<> &position, ChSharedBodyPtr chassisBody)
+{
 	ChSharedBodyPtr mrigidBody;
 	ChSharedBodyPtr mrigidBodyPrev;
 	ChSharedBodyPtr mrigidBodyFirst;
@@ -225,11 +149,11 @@ ChSharedBodyPtr inputTrackModelM113(int nTracks, real3 pinLoc1, ChVector<> &posi
 	double pos_x = 0, pos_y = 0, pos_z = 0, rot_x = 0, rot_y = 0, rot_z = 0;
 
 	string temp_data;
-	ifstream ifile("pos_M113_4.dat");
+	ifstream ifile("pos_M113.dat");
 	getline(ifile, temp_data);
 	stringstream ss(temp_data);
-
-	for (int i = 0; i < nTracks; i++) {
+	for (int i = 0; i < nTracks; i++)
+	{
 		getline(ifile, temp_data);
 		stringstream ss(temp_data);
 		ss >> bodyNum >> pos_x >> pos_y >> pos_z >> rot_x >> rot_y >> rot_z;
@@ -238,14 +162,15 @@ ChSharedBodyPtr inputTrackModelM113(int nTracks, real3 pinLoc1, ChVector<> &posi
 		ChVector<> pos_temp = ChVector<>(pos_x, pos_y, 0) + position;
 		ChQuaternion<> temp_Q = chrono::Q_from_AngAxis(rot_z, VECT_Z);
 		mrigidBody = createTrackShoeM113(pos_temp, temp_Q);
+		//mrigidBody->SetBodyFixed(true);
 		shoes.push_back(mrigidBody.get_ptr());
-		//mrigidBody->GetCollisionModel()->SetFamily(3);
-		//mrigidBody->GetCollisionModel()->SetFamilyMaskNoCollisionWithFamily(3);
 
-		if (i == 0) {
+		if (i == 0)
+		{
 			mrigidBodyFirst = mrigidBody;
 		}
-		if (i != 0) {
+		if (i != 0)
+		{
 			ChCoordsys<> pos1, pos2;
 			pos1.pos = Vector(0, 0, 0);
 			pos2.pos = Vector(0, 0, 0);
@@ -254,7 +179,8 @@ ChSharedBodyPtr inputTrackModelM113(int nTracks, real3 pinLoc1, ChVector<> &posi
 			system_gpu->AddLink(revJoint);
 			revolutes.push_back(revJoint);
 		}
-		if (i == (nTracks - 1)) {
+		if (i == (nTracks - 1))
+		{
 			ChCoordsys<> pos1, pos2;
 			pos1.pos = Vector(0, 0, 0);
 			pos2.pos = Vector(0, 0, 0);
@@ -264,21 +190,15 @@ ChSharedBodyPtr inputTrackModelM113(int nTracks, real3 pinLoc1, ChVector<> &posi
 			system_gpu->AddLink(revJoint);
 			revolutes.push_back(revJoint);
 		}
-	}
-	{
-		getline(ifile, temp_data);
-		std::stringstream ss(temp_data);
-		ss >> bodyNum >> pos_x >> pos_y >> pos_z >> rot_x >> rot_y >> rot_z;
-		ChVector<> pos_temp = ChVector<>(pos_x, pos_y, 0) + position;
-		mrigidBody = createRollerM113(pos_temp, chassisBody, 0, 0, 0, .305 / 1.5);
 
 	}
-	for (int i = 0; i < 3; i++) {
+
+	for (int i = 0; i < 5; i++) {
 		getline(ifile, temp_data);
 		std::stringstream ss(temp_data);
 		ss >> bodyNum >> pos_x >> pos_y >> pos_z >> rot_x >> rot_y >> rot_z;
 		ChVector<> pos_temp = ChVector<>(pos_x, pos_y, 0) + position;
-		rollers[roller_sprocker_counter] = createRollerM113(pos_temp, chassisBody, 0, 0, 0, .305 * 1.2);
+		rollers[roller_sprocker_counter] = createRollerM113(pos_temp, chassisBody, 0, 0, 0);
 		ChQuaternion<> temp;
 		temp.Q_from_NasaAngles(ChVector<>(rot_x, rot_y, rot_z));
 		rollers[roller_sprocker_counter]->SetRot(temp);
@@ -286,7 +206,8 @@ ChSharedBodyPtr inputTrackModelM113(int nTracks, real3 pinLoc1, ChVector<> &posi
 	}
 
 	ChSharedBodyPtr my_link1;
-	for (int i = 0; i < 1; i++) {
+	for (int i = 0; i < 1; i++)
+	{
 		getline(ifile, temp_data);
 		std::stringstream ss(temp_data);
 		ss >> bodyNum >> pos_x >> pos_y >> pos_z >> rot_x >> rot_y >> rot_z;
@@ -296,11 +217,12 @@ ChSharedBodyPtr inputTrackModelM113(int nTracks, real3 pinLoc1, ChVector<> &posi
 		temp.Q_from_NasaAngles(ChVector<>(rot_x, rot_y, rot_z));
 		my_link1->SetRot(temp);
 	}
-	for (int i = 0; i < 1; i++) {
+	for (int i = 0; i < 1; i++)
+	{
 		getline(ifile, temp_data);
 		std::stringstream ss(temp_data);
 		ss >> bodyNum >> pos_x >> pos_y >> pos_z >> rot_x >> rot_y >> rot_z;
-		ChVector<> pos_temp = ChVector<>(pos_x - .01, pos_y, 0) + position;
+		ChVector<> pos_temp = ChVector<>(pos_x, pos_y, 0) + position;
 		ChSharedBodyPtr idler = createIdlerM113(pos_temp, chassisBody, 10, 500, 100);
 	}
 
@@ -308,46 +230,40 @@ ChSharedBodyPtr inputTrackModelM113(int nTracks, real3 pinLoc1, ChVector<> &posi
 }
 
 template<class T>
-void RunTimeStep(T* mSys, const int frame) {
+void RunTimeStep(T* mSys, const int frame)
+{
 	engine1->Empty_forces_accumulators();
 	engine2->Empty_forces_accumulators();
-	if (frame * timestep > .2) {
+	if (frame * timestep > .2)
+	{
 		engine1->SetWvel_loc(ChVector<>(0, 0, 4));
 		engine2->SetWvel_loc(ChVector<>(0, 0, 4));
-		for (int i = 0; i < 6; i++) {
-			rollers[i]->SetWvel_loc(ChVector<>(0, 0, 4));
-		}
-		//engine1->Accumulate_torque(ChVector<>(0, 0, 400), 1);
-		//engine2->Accumulate_torque(ChVector<>(0, 0, 400), 1);
-//		if (ChFunction_Const* mfun = dynamic_cast<ChFunction_Const*>(eng_roller1->Get_spe_funct())) {
-//			mfun->Set_yconst(2);     // rad/s  angular speed
-//		}
-//
-//		if (ChFunction_Const* mfun = dynamic_cast<ChFunction_Const*>(eng_roller2->Get_spe_funct())) {
-//			mfun->Set_yconst(2);     // rad/s  angular speed
+//		for (int i = 0; i < 6; i++)
+//		{
+//			rollers[i]->SetWvel_loc(ChVector<>(0, 0, 4));
 //		}
 	}
 
-	//Vector pos = chassis->GetPos();
-
 	((ChSystemParallel*) mSys)->SetAABB(R3(-6.25, -2+container_height, -3), R3(6.25, 2+container_height, 3));
-
 }
 
-int main(int argc, char* argv[]) {
+int main(int argc, char* argv[])
+{
 	if (argc > 1) {
 		data_folder = argv[1];
 		visualize = atoi(argv[2]);
 		particle_c = atof(argv[3]); // timestep
 		addParticles = atoi(argv[4]);
 	}
+
+	// Set up the solver
 	system_gpu = new ChSystemParallelDVI;
 	system_gpu->SetIntegrationType(ChSystem::INT_ANITESCU);
 
 	((ChLcpSolverParallelDVI*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationNormal(40);
 	((ChLcpSolverParallelDVI*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSliding(40);
 	((ChLcpSolverParallelDVI*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationSpinning(0);
-	((ChLcpSolverParallelDVI*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationBilateral(20);
+	((ChLcpSolverParallelDVI*) (system_gpu->GetLcpSolverSpeed()))->SetMaxIterationBilateral(40);
 	system_gpu->SetTol(tolerance);
 	system_gpu->SetTolSpeeds(tolerance);
 	system_gpu->SetMaxPenetrationRecoverySpeed(100);
@@ -362,10 +278,12 @@ int main(int argc, char* argv[]) {
 	((ChCollisionSystemParallel *) (system_gpu->GetCollisionSystem()))->setBodyPerBin(200, 100);
 	system_gpu->Set_G_acc(ChVector<>(0, gravity, 0));
 	system_gpu->SetStep(timestep);
-	int threads = 16;
-	system_gpu->SetParallelThreadNumber(threads);
-	omp_set_num_threads(threads);
+	//int threads = 16;
+	//system_gpu->SetParallelThreadNumber(threads);
+	//omp_set_num_threads(threads);
+	// End set up solver
 
+	// Create box to keep everything inside
 	ChSharedBodyPtr L = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
 	ChSharedBodyPtr R = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
 	ChSharedBodyPtr F = ChSharedBodyPtr(new ChBody(new ChCollisionModelParallel));
@@ -396,36 +314,27 @@ int main(int argc, char* argv[]) {
 	FinalizeObject(F, (ChSystemParallel *) system_gpu);
 	FinalizeObject(B, (ChSystemParallel *) system_gpu);
 	FinalizeObject(Bottom, (ChSystemParallel *) system_gpu);
+	// End create box to keep everything inside
 
 	material_shoes = ChSharedPtr<ChMaterialSurface>(new ChMaterialSurface);
 	material_shoes->SetFriction(1);
 	material_shoes->SetCompliance(0);
-	material_shoes->SetCohesion(-1000);
+	material_shoes->SetCohesion(0);//-1000);
+
 	material_chassis = ChSharedPtr<ChMaterialSurface>(new ChMaterialSurface);
-	material_chassis->SetFriction(0);
-	material_chassis->SetCohesion(-1000);
+	material_chassis->SetFriction(1);
+	material_chassis->SetCohesion(0);//-1000);
 
 	real height = -1.8;
 	real x_offset = 1.25;
-	ChVector<> temporary1 = ChVector<>(2.0 + x_offset, .1 + height, 0);
-	ChVector<> temporary2 = ChVector<>(x_offset, height, .8);
-	ChVector<> temporary3 = ChVector<>(x_offset, height, -.8);
+	ChVector<double> tankPos = ChVector<>(0,-1.7,0);
+	ChVector<> temporary1 = ChVector<>(2.358,0,0)+tankPos;
+	ChVector<> temporary2 = ChVector<>(0,0,1.052+.08)+tankPos;
+	ChVector<> temporary3 = ChVector<>(0,0,-1.052-.08)+tankPos;
 
 	chassis = createChassisM113(temporary1);
-	engine1 = inputTrackModelM113(50, R3(-.09075, 0, 0) * scale_tank, temporary2, chassis);
-	engine2 = inputTrackModelM113(50, R3(-.09075, 0, 0) * scale_tank, temporary3, chassis);
-
-//	eng_roller1 = ChSharedPtr<ChLinkEngine>(new ChLinkEngine);
-//	eng_roller1->Initialize(engine1, chassis, ChCoordsys<>(engine1->GetPos(), QUNIT));
-//	eng_roller1->Set_shaft_mode(ChLinkEngine::ENG_SHAFT_LOCK);     // also works as revolute support
-//	eng_roller1->Set_eng_mode(ChLinkEngine::ENG_MODE_SPEED);
-//	system_gpu->AddLink(eng_roller1);
-//
-//	eng_roller2 = ChSharedPtr<ChLinkEngine>(new ChLinkEngine);d
-//	eng_roller2->Initialize(engine2, chassis, ChCoordsys<>(engine2->GetPos(), QUNIT));
-//	eng_roller2->Set_shaft_mode(ChLinkEngine::ENG_SHAFT_LOCK);     // also works as revolute support
-//	eng_roller2->Set_eng_mode(ChLinkEngine::ENG_MODE_SPEED);
-//	system_gpu->AddLink(eng_roller2);
+	engine1 = inputTrackModelM113(61, R3(-.09075, 0, 0), temporary2, chassis);
+	engine2 = inputTrackModelM113(61, R3(-.09075, 0, 0), temporary3, chassis);
 
 	int3 num_per_dir;
 	//num_per_dir = I3(200, 1, 80);
